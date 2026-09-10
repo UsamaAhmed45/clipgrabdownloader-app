@@ -6,7 +6,7 @@ import { siteConfig } from "@/config/site";
 
 export const metadata: Metadata = buildMetadata({
   title: "Terms of Service",
-  description: `The terms for using ${siteConfig.name}.`,
+  description: `The terms for using ${siteConfig.name}, including acceptable use, platform affiliation, and what to expect if a download link doesn't work as intended.`,
   path: "/terms",
 });
 

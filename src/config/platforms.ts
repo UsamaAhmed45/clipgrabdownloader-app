@@ -143,6 +143,7 @@ export const platforms: Platform[] = [
     urlExamples: [
       "tiktok.com/@username/video/7123456789012345678",
       "vm.tiktok.com/ZM8AbCdEf/",
+      "vt.tiktok.com/ZSqUReF4j/",
     ],
     supportedContent: ["Public TikTok videos", "Photo-mode TikTok slideshows", "Original audio tracks"],
     intro: [
@@ -161,7 +162,7 @@ export const platforms: Platform[] = [
       { label: "MP3 (audio only)", detail: "Just the sound — the original audio or the sound the creator applied to the clip." },
     ],
     troubleshooting: [
-      { issue: "The vm.tiktok.com link doesn't work", explanation: "Those short links expire faster than full tiktok.com/@user/video/ links. Open the short link in a browser once, let it redirect, then copy the full URL from the address bar." },
+      { issue: "The vm.tiktok.com or vt.tiktok.com link doesn't work", explanation: "Those short links expire faster than full tiktok.com/@user/video/ links. Open the short link in a browser once, let it redirect, then copy the full URL from the address bar." },
       { issue: "Video downloads but it's a slideshow, not a video", explanation: "Photo-mode TikToks aren't a single video file — download the audio track separately, or save the images from the post itself." },
       { issue: "\"Video unavailable\" for a video I can see in the app", explanation: "Some creators disable downloads for individual videos, or the account is set to private — both block third-party retrieval even though the video plays fine for you inside the TikTok app." },
     ],

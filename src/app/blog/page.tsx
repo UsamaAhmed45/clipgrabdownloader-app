@@ -7,7 +7,7 @@ import { getPublishedPosts } from "@/config/blog";
 
 export const metadata: Metadata = buildMetadata({
   title: "Blog",
-  description: "Practical, plain-language guides on downloading, video quality, and troubleshooting.",
+  description: "Practical, plain-language guides on downloading videos, understanding video quality and formats, and troubleshooting links that won't process.",
   path: "/blog",
 });
 

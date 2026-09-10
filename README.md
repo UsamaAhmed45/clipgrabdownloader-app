@@ -267,10 +267,29 @@ page) and, typically, other sites linking to yours.
 
 `npx tsc --noEmit` for type checking, `npm run lint` for ESLint, and
 `npm run validate:seo` (against a running build) for the SEO checks above.
-No component/e2e test suite is set up yet — add Playwright or Vitest if you
-want one; the SEO validator intentionally stays framework-agnostic (plain
-`fetch` + regex) so it can run against any deployment, not just this
-codebase.
+
+**Before you actually release**, run `npm run test:links` — this is the
+one check that matters most and the one most tempting to skip. Every
+other check here (typecheck, SEO validator, code review) can confirm the
+*pipeline* is wired correctly, but none of them can confirm a real
+download from a real platform actually works, because that requires
+network access to Instagram/TikTok/YouTube/etc. — which a sandboxed
+build/CI environment (including the one this project was originally built
+in) typically doesn't have. Open `scripts/test-real-links.mjs`, fill in
+one real current public link per platform, then:
+```bash
+npm run build && npm run start &
+npm run test:links -- http://localhost:3000
+```
+This runs the *full* pipeline per platform — resolve, get a token, fetch
+the actual file, confirm real media bytes came back — not just "did the
+API respond." A platform that resolves fine but never actually streams a
+real file is still broken, and this is what catches that.
+
+No component/e2e test suite is set up yet — add Playwright or Vitest if
+you want one; the SEO validator and link-test script intentionally stay
+framework-agnostic (plain `fetch`) so either can run against any
+deployment, not just this codebase.
 
 ## Project structure
 

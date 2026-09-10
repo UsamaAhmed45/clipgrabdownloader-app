@@ -151,7 +151,13 @@ const extractors: Record<string, (url: string) => Promise<ExtractedMedia>> = {
   "pinterest-video-downloader": extractPinterest,
 };
 
-const EXTRACTION_TIMEOUT_MS = 20_000;
+// Kept short deliberately: with the one-retry logic below, the worst
+// case is roughly two of these plus a short pause, and that total needs
+// to stay comfortably under the client's own 25s request timeout (see
+// DownloadForm.tsx) — otherwise the browser would give up and show "took
+// too long" while the server was still quietly retrying in the
+// background, which would be a confusing, misleading failure mode.
+const EXTRACTION_TIMEOUT_MS = 9_000;
 
 function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
   return new Promise((resolve, reject) => {
@@ -169,6 +175,10 @@ function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
   });
 }
 
+function delay(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 /**
  * Resolves a validated link into downloadable format URLs using the
  * btch-downloader npm package — no separate binary or install step beyond
@@ -177,10 +187,26 @@ function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
  *
  * Wrapped with a hard timeout so a hanging upstream request fails fast
  * with a clear error instead of leaving the person staring at a spinner
- * indefinitely.
+ * indefinitely — and with one automatic retry, since these unofficial
+ * extraction services are the flakiest part of the whole pipeline by
+ * nature (see README "How downloading works"): a meaningful share of
+ * "sometimes it just fails" reports are a single transient upstream
+ * hiccup, not a genuinely dead link, and one retry after a short pause
+ * resolves those without the person needing to notice and click "Try
+ * again" themselves.
  */
 export async function extractMedia(platformSlug: string, url: string): Promise<ExtractedMedia> {
   const extractor = extractors[platformSlug];
   if (!extractor) throw new Error("UNSUPPORTED_PLATFORM");
-  return withTimeout(extractor(url), EXTRACTION_TIMEOUT_MS);
+
+  try {
+    return await withTimeout(extractor(url), EXTRACTION_TIMEOUT_MS);
+  } catch (err) {
+    // Don't retry a platform we don't support (won't ever succeed) or a
+    // request that already used its full timeout budget (retrying would
+    // just double the person's wait for the same likely outcome).
+    if (err instanceof Error && err.message === "EXTRACTION_TIMEOUT") throw err;
+    await delay(600);
+    return withTimeout(extractor(url), EXTRACTION_TIMEOUT_MS);
+  }
 }

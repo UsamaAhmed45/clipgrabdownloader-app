@@ -9,7 +9,7 @@ import { PlatformIconBadge } from "@/components/ui/PlatformIcon";
 export const metadata: Metadata = buildMetadata({
   title: "How It Works",
   description:
-    "How the downloader processes a link, what happens to it, and why some videos can't be downloaded.",
+    "A step-by-step look at how the downloader processes a link, what happens to the data you submit, and why some videos can't be downloaded.",
   path: "/how-it-works",
 });
 

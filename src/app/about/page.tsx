@@ -7,7 +7,7 @@ import { siteConfig } from "@/config/site";
 
 export const metadata: Metadata = buildMetadata({
   title: "About",
-  description: `What ${siteConfig.name} is, who builds it, and how to get in touch.`,
+  description: `What ${siteConfig.name} is, who builds it, how the downloader actually works behind the scenes, and how to get in touch with questions or feedback.`,
   path: "/about",
 });
 

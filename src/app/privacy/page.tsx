@@ -6,7 +6,7 @@ import { siteConfig } from "@/config/site";
 
 export const metadata: Metadata = buildMetadata({
   title: "Privacy Policy",
-  description: `How ${siteConfig.name} handles the links and data you submit.`,
+  description: `How ${siteConfig.name} handles the links and data you submit — what's stored, what isn't, and how long anything sticks around before it's discarded.`,
   path: "/privacy",
 });
 

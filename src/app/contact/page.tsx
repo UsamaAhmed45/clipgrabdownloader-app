@@ -7,7 +7,7 @@ import { siteConfig } from "@/config/site";
 
 export const metadata: Metadata = buildMetadata({
   title: "Help Centre",
-  description: `Get support, report an issue, or send a suggestion to the ${siteConfig.name} team.`,
+  description: `Get support, report a bug, request a new platform, or send a suggestion to the ${siteConfig.name} team — most questions get answered within a day.`,
   path: "/contact",
 });
 

@@ -8,7 +8,7 @@ import { siteConfig } from "@/config/site";
 
 export const metadata: Metadata = buildMetadata({
   title: "Frequently Asked Questions",
-  description: "Answers to common questions about downloading videos, supported platforms, quality, and privacy.",
+  description: "Answers to common questions about downloading public videos, supported platforms, video quality and formats, privacy, and account requirements.",
   path: "/faq",
 });
 
