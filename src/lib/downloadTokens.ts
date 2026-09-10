@@ -4,6 +4,14 @@ interface TokenEntry {
   url: string;
   filename: string;
   expiresAt: number;
+  // Sent as the Referer header when the file is actually streamed (see
+  // src/app/api/download/file/route.ts). Several platforms' CDNs —
+  // YouTube's especially — reject a file request that doesn't carry a
+  // Referer matching the platform's own site, even when the signed URL
+  // itself is completely valid. Without this, extraction can succeed
+  // (title/formats show up fine) while the actual download silently
+  // fails right after.
+  referer?: string;
 }
 
 // In-memory by design for this scaffold — fine for a single dev/small
@@ -13,9 +21,9 @@ interface TokenEntry {
 const tokens = new Map<string, TokenEntry>();
 const TTL_MS = 10 * 60 * 1000;
 
-export function createDownloadToken(url: string, filename: string): string {
+export function createDownloadToken(url: string, filename: string, referer?: string): string {
   const token = randomUUID();
-  tokens.set(token, { url, filename, expiresAt: Date.now() + TTL_MS });
+  tokens.set(token, { url, filename, expiresAt: Date.now() + TTL_MS, referer });
   cleanupExpired();
   return token;
 }

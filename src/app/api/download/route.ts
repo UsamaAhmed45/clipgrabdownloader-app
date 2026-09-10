@@ -29,6 +29,20 @@ function filenameFor(title: string, ext: string) {
   return `${safe}.${ext}`;
 }
 
+// Sent as the Referer header when the file itself is fetched (see
+// downloadTokens.ts and the file route). YouTube's CDN in particular is
+// known to reject a request whose Referer doesn't match youtube.com, even
+// for an otherwise-valid signed URL — this is what was causing YouTube
+// downloads specifically to resolve fine but fail right after.
+const REFERER_BY_PLATFORM: Record<string, string> = {
+  "youtube-video-downloader": "https://www.youtube.com/",
+  "instagram-video-downloader": "https://www.instagram.com/",
+  "facebook-video-downloader": "https://www.facebook.com/",
+  "tiktok-video-downloader": "https://www.tiktok.com/",
+  "x-video-downloader": "https://x.com/",
+  "pinterest-video-downloader": "https://www.pinterest.com/",
+};
+
 function clientKey(request: NextRequest): string {
   const forwarded = request.headers.get("x-forwarded-for");
   return forwarded?.split(",")[0]?.trim() || "unknown";
@@ -46,9 +60,10 @@ async function resolveWithProvider(url: URL, platformSlug: string) {
       };
     }
 
+    const referer = REFERER_BY_PLATFORM[platformSlug];
     const formats = result.formats.slice(0, 6).map((f) => ({
       label: f.label,
-      token: createDownloadToken(f.url, filenameFor(result.title, f.ext)),
+      token: createDownloadToken(f.url, filenameFor(result.title, f.ext), referer),
     }));
 
     return {

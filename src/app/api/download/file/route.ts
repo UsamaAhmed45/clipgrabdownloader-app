@@ -108,6 +108,7 @@ export async function GET(request: NextRequest) {
       headers: {
         "User-Agent":
           "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124 Safari/537.36",
+        ...(entry.referer ? { Referer: entry.referer } : {}),
       },
       // Connecting to the upstream CDN shouldn't hang indefinitely — fail
       // within 20s so the browser gets a clear error instead of spinning.
