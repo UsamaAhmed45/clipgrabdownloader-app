@@ -1,0 +1,11 @@
+<svg width="720" height="160" viewBox="0 0 720 160" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="ClipGrab">
+  <rect x="0" y="0" width="160" height="160" rx="36" fill="#6F92FF"/>
+  <text x="80" y="112" text-anchor="middle"
+        font-family="Poppins" font-weight="700"
+        font-size="92" fill="#14151A" letter-spacing="-3">cg</text>
+
+  <text x="190" y="106" font-family="Poppins" font-weight="600"
+        font-size="72" letter-spacing="-1.5">
+    <tspan fill="#F1EFE9">Clip</tspan><tspan fill="#6F92FF">Grab</tspan>
+  </text>
+</svg>

@@ -1,0 +1,357 @@
+@import "tailwindcss";
+
+:root {
+  --ink: #12141a;
+  --paper: #f7f6f3;
+  --paper-raised: #ffffff;
+  --line: #e4e2dc;
+  --accent: #2653d8;
+  --accent-ink: #0f2e8c;
+  --muted: #6b6a64;
+  --brand-from: #2fcfff;
+  --brand-via: #1e63ee;
+  --brand-to: #123fb8;
+  --shadow-card: 0 1px 2px rgba(18, 20, 26, 0.04), 0 8px 24px rgba(18, 20, 26, 0.07);
+  --shadow-card-hover: 0 4px 10px rgba(18, 20, 26, 0.06), 0 16px 40px rgba(30, 99, 238, 0.14);
+}
+
+[data-theme="dark"] {
+  --ink: #f1efe9;
+  --paper: #14151a;
+  --paper-raised: #1b1d24;
+  --line: #2b2d35;
+  --accent: #6f92ff;
+  --accent-ink: #a9bdff;
+  --muted: #9a988f;
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.35);
+  --shadow-card-hover: 0 4px 10px rgba(0, 0, 0, 0.35), 0 16px 40px rgba(47, 207, 255, 0.18);
+}
+
+@theme inline {
+  --color-ink: var(--ink);
+  --color-paper: var(--paper);
+  --color-paper-raised: var(--paper-raised);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-muted: var(--muted);
+  /* Swap these for next/font/google (Fraunces + Inter) or self-hosted
+     variable fonts when this deploys somewhere with normal internet
+     access at build time — see README "Fonts". */
+  --font-display: Georgia, "Iowan Old Style", "Palatino Linotype", serif;
+  --font-sans: -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+html {
+  color-scheme: light;
+}
+html[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+h1,
+h2,
+h3,
+.font-display {
+  font-family: var(--font-display), Georgia, serif;
+}
+
+/* Logo swap follows our data-theme attribute (see ThemeToggle), not
+   Tailwind's class-based dark: variant, since the toggle is user-driven
+   rather than tied to prefers-color-scheme. */
+.logo-dark {
+  display: none;
+}
+[data-theme="dark"] .logo-light {
+  display: none;
+}
+[data-theme="dark"] .logo-dark {
+  display: block;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Brand gradient — reserved for the logo, the primary CTA, and one hero
+   accent only (see DESIGN.md: "spend your boldness in one place"). */
+.brand-gradient-text {
+  background: linear-gradient(100deg, var(--brand-from), var(--brand-via) 55%, var(--brand-to));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.brand-gradient-bg {
+  background: linear-gradient(100deg, var(--brand-from), var(--brand-via) 55%, var(--brand-to));
+  background-size: 160% 160%;
+  background-position: 0% 50%;
+  transition: background-position 0.5s ease, transform 0.15s ease, box-shadow 0.2s ease;
+}
+.brand-gradient-bg:hover {
+  background-position: 100% 50%;
+}
+.brand-gradient-bg:active {
+  transform: scale(0.98);
+}
+
+/* Card visibility: a real surface + shadow instead of a border on the same
+   flat background, so platform/blog cards read clearly at a glance.
+   --card-accent lets an individual card (e.g. a platform card) tint its
+   own hover state with the platform's brand color instead of the generic
+   accent — falls back to --accent when not set. */
+.surface-card {
+  --card-accent: var(--accent);
+  background: var(--paper-raised);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-card);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.surface-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-card-hover), 0 10px 30px -12px color-mix(in srgb, var(--card-accent) 45%, transparent);
+  border-color: color-mix(in srgb, var(--card-accent) 40%, var(--line));
+}
+
+.card-arrow {
+  transition: transform 0.25s ease, opacity 0.25s ease;
+  opacity: 0.35;
+  transform: translateX(-2px);
+}
+.surface-card:hover .card-arrow {
+  opacity: 1;
+  transform: translateX(2px);
+}
+
+/* Same --card-accent pattern as .surface-card, sized for small pill links
+   (e.g. "related platform" links) rather than full cards. */
+.pill-hover {
+  --card-accent: var(--accent);
+  border-color: var(--line);
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+.pill-hover:hover {
+  border-color: var(--card-accent);
+  color: var(--card-accent);
+}
+
+/* Glossy glass platform cards — frosted translucent surface, soft
+   layered shadow, gentle lift + border glow on hover. Pairs with the
+   corner color wash and glossy icon badge rendered inline on the card. */
+.platform-glass-card {
+  background: color-mix(in srgb, var(--paper-raised) 88%, transparent);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid color-mix(in srgb, var(--line) 70%, transparent);
+  box-shadow:
+    0 1px 2px rgba(18, 20, 26, 0.04),
+    0 12px 28px -8px rgba(18, 20, 26, 0.10);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+[data-theme="dark"] .platform-glass-card {
+  background: color-mix(in srgb, var(--paper-raised) 70%, transparent);
+}
+.platform-glass-card:hover {
+  transform: translateY(-4px);
+  border-color: color-mix(in srgb, var(--card-accent) 45%, var(--line));
+  box-shadow:
+    0 1px 2px rgba(18, 20, 26, 0.05),
+    0 20px 40px -12px color-mix(in srgb, var(--card-accent) 35%, transparent);
+}
+
+/* Theme toggle — a real sliding switch (sun/moon) instead of a plain
+   button, in brand tones rather than a copied color scheme. */
+.theme-switch {
+  position: relative;
+  display: inline-flex;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.theme-switch input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.theme-switch-track {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 52px;
+  height: 30px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--brand-from), var(--brand-via) 60%, var(--brand-to));
+  transition: filter 0.2s ease;
+  padding: 0 6px;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.15);
+}
+.theme-switch:hover .theme-switch-track {
+  filter: brightness(1.08);
+}
+.theme-switch-icon {
+  position: relative;
+  z-index: 1;
+  width: 14px;
+  height: 14px;
+  color: rgba(255, 255, 255, 0.85);
+}
+.theme-switch-icon-sun {
+  margin-right: auto;
+}
+.theme-switch-icon-moon {
+  margin-left: auto;
+}
+.theme-switch-thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.theme-switch input:checked ~ .theme-switch-track .theme-switch-thumb {
+  transform: translateX(22px);
+}
+
+/* One orchestrated entrance for the hero on load — nothing else animates
+   on page load (see DESIGN.md motion guidance). */
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-rise-in {
+  animation: rise-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.animate-rise-in-1 {
+  animation-delay: 0.05s;
+}
+.animate-rise-in-2 {
+  animation-delay: 0.15s;
+}
+.animate-rise-in-3 {
+  animation-delay: 0.25s;
+}
+
+/* Loading-state pattern: a subtle diagonal weave instead of a flat pulse,
+   used on every skeleton/loading surface. Light and dark variants are
+   tone-matched to the theme's own palette rather than a fixed color, and
+   the whole pattern drifts slowly rather than flashing, so it reads as
+   "working" without being distracting. */
+.loading-pattern {
+  position: relative;
+  overflow: hidden;
+  background-color: var(--paper-raised);
+  background-image: repeating-linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--accent) 7%, var(--paper-raised)) 0px,
+    color-mix(in srgb, var(--accent) 7%, var(--paper-raised)) 14px,
+    var(--paper-raised) 14px,
+    var(--paper-raised) 28px
+  );
+  background-size: 200% 200%;
+  animation: loading-drift 3.5s linear infinite;
+}
+@keyframes loading-drift {
+  from {
+    background-position: 0% 0%;
+  }
+  to {
+    background-position: 140px 140px;
+  }
+}
+
+/* Download progress fill — a moving brand gradient with a shimmer sweep,
+   instead of a flat translucent block, so the percentage climbing feels
+   like an active process rather than a static bar filling in. */
+.download-progress-fill {
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--brand-from) 55%, transparent),
+    color-mix(in srgb, var(--brand-via) 55%, transparent)
+  );
+}
+.download-progress-fill::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    100deg,
+    transparent 20%,
+    rgba(255, 255, 255, 0.45) 50%,
+    transparent 80%
+  );
+  background-size: 200% 100%;
+  animation: shimmer-sweep 1.3s linear infinite;
+}
+@keyframes shimmer-sweep {
+  from {
+    background-position: 160% 0;
+  }
+  to {
+    background-position: -60% 0;
+  }
+}
+
+/* A quick, satisfied "pop" the instant a download finishes — plays once
+   via the key remount trick (see DownloadForm.tsx), not on every render. */
+@keyframes download-complete-pop {
+  0% {
+    transform: scale(1);
+  }
+  35% {
+    transform: scale(1.06);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+.download-complete-pop {
+  animation: download-complete-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Full-button shimmer sweep for the main submit button while it's
+   actively extracting — same shimmer motion as the download progress
+   fill, just covering the whole button instead of a growing width. */
+.button-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+.button-shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    100deg,
+    transparent 20%,
+    rgba(255, 255, 255, 0.35) 50%,
+    transparent 80%
+  );
+  background-size: 200% 100%;
+  animation: shimmer-sweep 1.3s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}

@@ -1,0 +1,35 @@
+<svg width="256" height="256" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="ClipGrab icon">
+  <defs>
+    <linearGradient id="g1" x1="10%" y1="0%" x2="90%" y2="100%">
+      <stop offset="0%" stop-color="#2FCFFF"/>
+      <stop offset="55%" stop-color="#1E63EE"/>
+      <stop offset="100%" stop-color="#0F3AB8"/>
+    </linearGradient>
+    <linearGradient id="g2" x1="10%" y1="0%" x2="90%" y2="100%">
+      <stop offset="0%" stop-color="#3DD8FF"/>
+      <stop offset="55%" stop-color="#2470F5"/>
+      <stop offset="100%" stop-color="#1245C4"/>
+    </linearGradient>
+    <radialGradient id="sheen" cx="32%" cy="18%" r="75%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.4"/>
+      <stop offset="45%" stop-color="#FFFFFF" stop-opacity="0.06"/>
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- "C" — open ring arc, center (108,128), gap facing right toward the G -->
+  <path d="M 161.6 83 A 70 70 0 1 0 161.6 173"
+        fill="none" stroke="url(#g1)" stroke-width="32" stroke-linecap="round"/>
+
+  <!-- "G" — closed ring, center (172,128), sized to stay inside the canvas -->
+  <circle cx="172" cy="128" r="56" fill="none" stroke="url(#g2)" stroke-width="32"/>
+
+  <!-- G tail (descender flick) -->
+  <path d="M 194 179 L 208 212" fill="none" stroke="url(#g2)" stroke-width="18" stroke-linecap="round"/>
+
+  <!-- center disc + play glyph, sits over the G -->
+  <circle cx="172" cy="128" r="34" fill="#123FBE"/>
+  <path d="M 162 112 L 194 128 L 162 144 Z" fill="#FFFFFF"/>
+
+  <circle cx="128" cy="128" r="126" fill="url(#sheen)"/>
+</svg>
