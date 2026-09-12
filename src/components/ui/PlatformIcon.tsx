@@ -91,6 +91,31 @@ function PinIcon({ className }: IconProps) {
   );
 }
 
+// A generic "conversation thread" pictogram (connected reply dots), not
+// a reproduction of Threads' own stylized "@" logo mark.
+function ThreadIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
+      <circle cx="8" cy="6.5" r="1.8" fill="currentColor" />
+      <circle cx="14" cy="12" r="1.8" fill="currentColor" />
+      <circle cx="9" cy="17.5" r="1.8" fill="currentColor" />
+      <path d="M8 8.3 13 11 M13 13 9 15.8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+// A generic upvote-arrow-in-a-circle pictogram — a common, universal
+// symbol for a discussion/ranking forum, not a reproduction of Reddit's
+// own Snoo character mark.
+function UpvoteIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
+      <circle cx="12" cy="12" r="8" stroke="currentColor" strokeWidth="1.7" />
+      <path d="M12 8.2 16 13 H13.2 V16 H10.8 V13 H8 Z" fill="currentColor" />
+    </svg>
+  );
+}
+
 const platformIcons: Record<string, (props: IconProps) => ReactElement> = {
   "instagram-video-downloader": CameraIcon,
   "facebook-video-downloader": LetterFIcon,
@@ -98,6 +123,8 @@ const platformIcons: Record<string, (props: IconProps) => ReactElement> = {
   "youtube-video-downloader": PlayIcon,
   "x-video-downloader": CrossMarkIcon,
   "pinterest-video-downloader": PinIcon,
+  "threads-video-downloader": ThreadIcon,
+  "reddit-video-downloader": UpvoteIcon,
 };
 
 export function PlatformIconBadge({

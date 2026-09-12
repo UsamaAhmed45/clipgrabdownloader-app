@@ -71,10 +71,25 @@ export function CursorTrail() {
     let active = false;
     const LIFE = 0.5; // seconds
 
+    function isOverHeader(clientY: number): boolean {
+      const header = document.querySelector("header");
+      if (!header) return false;
+      return clientY <= header.getBoundingClientRect().bottom;
+    }
+
     function onMove(e: PointerEvent) {
       if (e.pointerType !== "mouse") return;
       mouseX = e.clientX;
       mouseY = e.clientY;
+      // The header carries the logo and site name — a decorative glow
+      // has no business anywhere near the actual branding, so the trail
+      // simply stops emitting points while the cursor is over it. Any
+      // trail points already in flight from just before entering the
+      // header still fade out normally rather than vanishing abruptly.
+      if (isOverHeader(mouseY)) {
+        active = false;
+        return;
+      }
       active = true;
       points.push({ x: mouseX, y: mouseY, age: 0 });
       if (points.length > 24) points.shift();

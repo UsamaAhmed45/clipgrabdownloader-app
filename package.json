@@ -3,12 +3,14 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --webpack",
+    "dev:turbopack": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
     "validate:seo": "node scripts/validate-seo.mjs",
-    "test:links": "node scripts/test-real-links.mjs"
+    "test:links": "node scripts/test-real-links.mjs",
+    "test:security": "npx tsx scripts/test-security.ts"
   },
   "dependencies": {
     "btch-downloader": "^6.3.6",

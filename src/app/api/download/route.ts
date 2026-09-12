@@ -3,6 +3,7 @@ import { validateSubmittedLink } from "@/lib/validateLink";
 import { extractMedia } from "@/lib/mediaExtract";
 import { createDownloadToken } from "@/lib/downloadTokens";
 import { isRateLimited } from "@/lib/rateLimit";
+import { buildSafeFilename } from "@/lib/filename";
 
 export const dynamic = "force-dynamic";
 
@@ -24,10 +25,6 @@ export const dynamic = "force-dynamic";
  * or PATH setup required. See README "How downloading works" for the
  * yt-dlp-based alternative if you'd rather self-host that instead.
  */
-function filenameFor(title: string, ext: string) {
-  const safe = title.replace(/[^\w\-\s]/g, "").trim().slice(0, 80) || "media";
-  return `${safe}.${ext}`;
-}
 
 // Sent as the Referer header when the file itself is fetched (see
 // downloadTokens.ts and the file route). YouTube's CDN in particular is
@@ -41,18 +38,46 @@ const REFERER_BY_PLATFORM: Record<string, string> = {
   "tiktok-video-downloader": "https://www.tiktok.com/",
   "x-video-downloader": "https://x.com/",
   "pinterest-video-downloader": "https://www.pinterest.com/",
+  "threads-video-downloader": "https://www.threads.net/",
+  "reddit-video-downloader": "https://www.reddit.com/",
 };
 
 function clientKey(request: NextRequest): string {
   const forwarded = request.headers.get("x-forwarded-for");
-  return forwarded?.split(",")[0]?.trim() || "unknown";
+  return `resolve:${forwarded?.split(",")[0]?.trim() || "unknown"}`;
+}
+
+function isAbsoluteHttpUrl(value: string): boolean {
+  try {
+    const parsed = new URL(value);
+    return parsed.protocol === "http:" || parsed.protocol === "https:";
+  } catch {
+    return false;
+  }
 }
 
 async function resolveWithProvider(url: URL, platformSlug: string) {
   try {
     const result = await extractMedia(platformSlug, url.toString());
 
-    if (result.formats.length === 0) {
+    const referer = REFERER_BY_PLATFORM[platformSlug];
+    // Every adapter's returned format URL is validated before a download
+    // token is ever created for it — an adapter occasionally getting a
+    // malformed or non-absolute URL back from its upstream source is a
+    // real, observed failure mode (X's extractor has done this), and
+    // catching it here means the person sees a clean "no valid format"
+    // message immediately, instead of a token that's guaranteed to crash
+    // later when the file route tries to fetch a URL that was never
+    // valid in the first place.
+    const formats = result.formats
+      .filter((f) => isAbsoluteHttpUrl(f.url))
+      .slice(0, 6)
+      .map((f) => ({
+        label: f.label,
+        token: createDownloadToken(f.url, buildSafeFilename(result.title, f.ext), referer),
+      }));
+
+    if (formats.length === 0) {
       return {
         status: "extraction_failed" as const,
         platformSlug,
@@ -60,17 +85,13 @@ async function resolveWithProvider(url: URL, platformSlug: string) {
       };
     }
 
-    const referer = REFERER_BY_PLATFORM[platformSlug];
-    const formats = result.formats.slice(0, 6).map((f) => ({
-      label: f.label,
-      token: createDownloadToken(f.url, filenameFor(result.title, f.ext), referer),
-    }));
-
     return {
       status: "ready" as const,
       platformSlug,
       title: result.title,
       formats,
+      author: result.author,
+      thumbnail: result.thumbnail,
     };
   } catch (err) {
     if (err instanceof Error && err.message === "UNSUPPORTED_PLATFORM") {

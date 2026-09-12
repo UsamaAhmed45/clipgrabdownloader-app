@@ -1,4 +1,5 @@
 import { getPublishedPlatforms } from "@/config/platforms";
+import { normalizeSubmittedUrl } from "./urlNormalize";
 
 // Domains this tool claims to support, derived from the published platform
 // list rather than duplicated by hand.
@@ -27,6 +28,14 @@ const ALLOWED_HOSTS: Record<string, string> = {
   "pinterest.com": "pinterest-video-downloader",
   "www.pinterest.com": "pinterest-video-downloader",
   "pin.it": "pinterest-video-downloader",
+  "threads.net": "threads-video-downloader",
+  "www.threads.net": "threads-video-downloader",
+  "threads.com": "threads-video-downloader",
+  "www.threads.com": "threads-video-downloader",
+  "reddit.com": "reddit-video-downloader",
+  "www.reddit.com": "reddit-video-downloader",
+  "old.reddit.com": "reddit-video-downloader",
+  "redd.it": "reddit-video-downloader",
 };
 
 export interface ValidatedLink {
@@ -50,7 +59,7 @@ export interface RejectedLink {
 export function validateSubmittedLink(raw: string): ValidatedLink | RejectedLink {
   let url: URL;
   try {
-    url = new URL(raw.trim());
+    url = new URL(normalizeSubmittedUrl(raw));
   } catch {
     return { ok: false, reason: "That doesn't look like a valid link." };
   }

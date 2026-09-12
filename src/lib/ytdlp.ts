@@ -109,3 +109,68 @@ export function extractWithYtDlp(url: string): Promise<YtDlpResult> {
     });
   });
 }
+
+/**
+ * Calls the Vercel Python Function at /api/ytdlp-extract.py instead of
+ * spawning a local yt-dlp binary — this is what actually works once
+ * deployed, since a standard Node.js serverless function on Vercel can't
+ * reliably shell out to a separate binary the way extractWithYtDlp above
+ * does locally. See README "yt-dlp on Vercel" for the full context on
+ * why there are two separate code paths for the same underlying tool.
+ *
+ * This is an internal call — same deployment, not a public API contract
+ * — so it's fine for it to be a plain fetch with no auth: nothing outside
+ * this app is meant to call it directly, and it does the exact same
+ * validated extraction work the Node-side adapters already gate behind
+ * validateLink.ts before ever reaching this point.
+ */
+export async function extractWithYtDlpApi(url: string): Promise<YtDlpResult> {
+  const base = process.env.SITE_URL || "";
+  const endpoint = `${base}/api/ytdlp-extract.py?url=${encodeURIComponent(url)}`;
+
+  const res = await fetch(endpoint, { signal: AbortSignal.timeout(TIMEOUT_MS) });
+  const data = await res.json();
+
+  if (!res.ok) {
+    throw new Error(typeof data?.error === "string" ? data.error : "yt-dlp API extraction failed.");
+  }
+
+  return {
+    title: typeof data.title === "string" ? data.title : "video",
+    thumbnail: typeof data.thumbnail === "string" ? data.thumbnail : undefined,
+    formats: Array.isArray(data.formats) ? data.formats : [],
+  };
+}
+
+/**
+ * Tries every available yt-dlp path in order, returning the first one
+ * that actually finds a format — never throws itself, just resolves to
+ * null when nothing worked, so callers can fall through to their own
+ * original extraction method:
+ *   1. A local yt-dlp binary (works when running locally with it
+ *      installed — see README "Free built-in extraction (yt-dlp)")
+ *   2. The Vercel Python Function at /api/ytdlp-extract.py (works once
+ *      deployed — see README "yt-dlp on Vercel")
+ * Both exist because they solve different deployment shapes for the
+ * exact same underlying tool, not because one replaced the other.
+ */
+export async function tryYtDlp(url: string): Promise<YtDlpResult | null> {
+  try {
+    const result = await extractWithYtDlp(url);
+    if (result.formats.length > 0) return result;
+  } catch {
+    // Binary not installed, or a genuine extraction failure — either
+    // way, try the next method rather than giving up here.
+  }
+
+  try {
+    const result = await extractWithYtDlpApi(url);
+    if (result.formats.length > 0) return result;
+  } catch {
+    // The Python function isn't deployed (local dev without `vercel
+    // dev`), or it genuinely failed — the caller's own fallback method
+    // is what runs next.
+  }
+
+  return null;
+}

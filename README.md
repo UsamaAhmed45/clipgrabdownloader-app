@@ -58,15 +58,44 @@ npm update btch-downloader
 ```
 — since these extractors need regular fixes as platforms change.
 
-**Alternative: yt-dlp.** `src/lib/ytdlp.ts` contains a self-hosted
-alternative built around the well-established open-source `yt-dlp` tool,
-run as a subprocess — it's not wired into the route by default anymore
-(swapped out in favor of the zero-install npm option above), but the code
-is still there if you'd rather run that instead. Swap the import in
-`src/app/api/download/route.ts` from `extractMedia` (mediaExtract.ts) to
-`extractWithYtDlp` (ytdlp.ts) to switch back; it needs the `yt-dlp` binary
-installed separately (`winget install yt-dlp` on Windows, `brew install
-yt-dlp` on macOS).
+**yt-dlp fallback for X and Threads.** `src/lib/ytdlp.ts` wraps the
+well-established, actively-maintained open-source `yt-dlp` tool as a
+subprocess. `src/lib/adapters/x.ts` and `threads.ts` try it *first*, before
+falling back to the npm-based extractor above — X specifically overhauled
+its anti-scraping measures in 2025 (request signing, datacenter-IP
+blocking), and yt-dlp's active maintenance keeps up with that far better
+than the simpler npm-based scraper does.
+
+**yt-dlp on Vercel.** A standard Node.js serverless function on Vercel
+can't reliably shell out to a separate binary the way `extractWithYtDlp`
+does locally — real-world reports confirm this breaks in production even
+though it works fine on a normal machine. `api/ytdlp-extract.py` is a
+**separate Vercel Python Function** (auto-detected via `requirements.txt`
+at the project root) that runs yt-dlp as an actual Python library instead
+of a subprocess — this is what makes it work once deployed. `tryYtDlp()`
+in `src/lib/ytdlp.ts` tries the local binary first (for local dev), then
+this Python function (for production), then falls through to the original
+npm-based extractor if neither is available — nothing breaks for a
+deployment that hasn't set any of this up.
+
+**A real, unresolved limitation on Vercel's free (Hobby) plan**: every
+serverless function — Python ones included — is capped at 10 seconds of
+execution. yt-dlp against X specifically often takes longer than that in
+practice, especially handling X's post-2025 request-signing measures, so
+this may still fail there on the free plan even with the Python function
+correctly deployed. Vercel Pro raises that ceiling to 60 seconds, which
+is realistically what this needs to work reliably. This isn't a code
+problem to fix — it's an infrastructure/budget decision.
+
+**For local development**, the local binary path is the one that
+actually gets used (the Python function only exists once deployed to
+Vercel). Install yt-dlp:
+- Windows: `winget install yt-dlp`
+- macOS: `brew install yt-dlp`
+- Linux: see https://github.com/yt-dlp/yt-dlp/wiki/Installation
+
+Without it installed locally, X and Threads silently fall back to the
+npm-based extractor (no crash, no errors surfaced).
 
 **Prefer a hosted/paid API instead?** Either file can be swapped for a call
 to a licensed provider — the rest of the pipeline (token creation, file

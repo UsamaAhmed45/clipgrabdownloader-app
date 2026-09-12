@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { resolveDownloadToken } from "@/lib/downloadTokens";
+import { isRateLimited } from "@/lib/rateLimit";
+import { checkUrlIsSafeToFetch } from "@/lib/ssrfGuard";
 
 export const dynamic = "force-dynamic";
 
@@ -35,6 +37,14 @@ const MIME_BY_EXTENSION: Record<string, string> = {
 function mimeForFilename(filename: string): string {
   const ext = filename.split(".").pop()?.toLowerCase() ?? "";
   return MIME_BY_EXTENSION[ext] ?? "application/octet-stream";
+}
+
+function safeHostname(url: string): string {
+  try {
+    return new URL(url).hostname;
+  } catch {
+    return "invalid-url";
+  }
 }
 
 function escapeHtml(value: string): string {
@@ -92,6 +102,32 @@ function errorResponse(request: NextRequest, message: string, status: number) {
 }
 
 export async function GET(request: NextRequest) {
+  try {
+    return await handleFileDownload(request);
+  } catch (err) {
+    // A safety net around the whole handler — without this, an
+    // unexpected exception anywhere above (a malformed URL, a
+    // programming error) produces Next's own raw error response instead
+    // of JSON, which the client can't parse — that's what was showing up
+    // as an unhelpful generic "this link stopped working" message with
+    // no real detail. Now it's always at least a real, logged reason.
+    console.error("[download/file] Unhandled error:", err instanceof Error ? err.message : err);
+    return errorResponse(request, "Something went wrong on our end. Please try again.", 500);
+  }
+}
+
+async function handleFileDownload(request: NextRequest): Promise<Response> {
+  const forwarded = request.headers.get("x-forwarded-for");
+  const clientIp = forwarded?.split(",")[0]?.trim() || "unknown";
+
+  // A separate, stricter budget from link-resolution (see
+  // src/app/api/download/route.ts) — every request here is a real
+  // outbound fetch of someone else's file through this server, which is
+  // the more expensive operation actually worth limiting harder.
+  if (isRateLimited(`download:${clientIp}`, { windowMs: 60_000, maxRequests: 10 })) {
+    return errorResponse(request, "Too many downloads from this connection right now. Please wait a moment and try again.", 429);
+  }
+
   const token = request.nextUrl.searchParams.get("token");
   if (!token) {
     return errorResponse(request, "Missing download token.", 400);
@@ -100,6 +136,35 @@ export async function GET(request: NextRequest) {
   const entry = resolveDownloadToken(token);
   if (!entry) {
     return errorResponse(request, "This download link expired. Go back and submit the link again.", 410);
+  }
+
+  // Defense-in-depth: an HLS manifest (.m3u8) is a text playlist of
+  // segment URLs, not a single video file — streaming one through here
+  // as if it were an mp4 would silently hand back a tiny broken file
+  // that looks like a successful download but won't play. The
+  // extractors are meant to filter these out before creating a token
+  // (see mediaExtract.ts's Pinterest handling), but this check exists so
+  // that a future extractor change can't reintroduce the same bug
+  // unnoticed.
+  if (/\.m3u8(\?|$)/i.test(entry.url)) {
+    return errorResponse(
+      request,
+      "This video is only available as a streaming format we can't save as a file yet. Try a different quality option, or check back later.",
+      422
+    );
+  }
+
+  // The URL being fetched here came from an upstream extraction source
+  // (see src/lib/adapters), not from the person using the site directly —
+  // but this server is still the one making the outbound request, so it
+  // gets the same scrutiny as any other server-side fetch of an
+  // externally-supplied URL. See ssrfGuard.ts for what this actually
+  // checks (protocol, literal private/loopback addresses, and where the
+  // hostname really resolves to).
+  const ssrfCheck = await checkUrlIsSafeToFetch(entry.url);
+  if (!ssrfCheck.safe) {
+    console.error(`[download/file] SSRF check rejected upstream URL: ${ssrfCheck.reason} (host: ${safeHostname(entry.url)})`);
+    return errorResponse(request, "This download source couldn't be verified as safe. Please try again.", 502);
   }
 
   let upstream: Response;
@@ -114,11 +179,13 @@ export async function GET(request: NextRequest) {
       // within 20s so the browser gets a clear error instead of spinning.
       signal: AbortSignal.timeout(20_000),
     });
-  } catch {
+  } catch (err) {
+    console.error(`[download/file] Upstream fetch threw for host ${safeHostname(entry.url)}:`, err instanceof Error ? err.message : err);
     return errorResponse(request, "Couldn't reach the source server. It may be slow or down — try again.", 502);
   }
 
   if (!upstream.ok || !upstream.body) {
+    console.error(`[download/file] Upstream returned non-ok for host ${safeHostname(entry.url)}: status ${upstream.status} ${upstream.statusText}`);
     return errorResponse(request, "The source server refused this download.", 502);
   }
 

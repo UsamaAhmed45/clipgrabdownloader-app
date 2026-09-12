@@ -307,25 +307,6 @@ export const platforms: Platform[] = [
   // see README "Adding a new platform" for the checklist before flipping
   // published to true.
   {
-    slug: "reddit-video-downloader",
-    name: "Reddit",
-    brand: "Reddit",
-    title: "Reddit Video Downloader",
-    metaDescription: "Download public Reddit videos by pasting a post link.",
-    h1: "Reddit Video Downloader",
-    tagline: "Save public Reddit videos from a link.",
-    color: "#FF4500",
-    published: false,
-    urlExamples: ["reddit.com/r/subreddit/comments/abc123/title/"],
-    supportedContent: ["Public post videos"],
-    intro: [],
-    howTo: [],
-    formats: [],
-    troubleshooting: [],
-    faq: [],
-    relatedSlugs: [],
-  },
-  {
     slug: "snapchat-downloader",
     name: "Snapchat",
     brand: "Snapchat",
@@ -334,25 +315,6 @@ export const platforms: Platform[] = [
     h1: "Snapchat Downloader",
     tagline: "Save public Snapchat videos from a link.",
     color: "#FFFC00",
-    published: false,
-    urlExamples: [],
-    supportedContent: [],
-    intro: [],
-    howTo: [],
-    formats: [],
-    troubleshooting: [],
-    faq: [],
-    relatedSlugs: [],
-  },
-  {
-    slug: "threads-video-downloader",
-    name: "Threads",
-    brand: "Threads",
-    title: "Threads Video Downloader",
-    metaDescription: "Download public videos posted on Threads.",
-    h1: "Threads Video Downloader",
-    tagline: "Save public Threads videos from a link.",
-    color: "#000000",
     published: false,
     urlExamples: [],
     supportedContent: [],
@@ -440,7 +402,107 @@ export const platforms: Platform[] = [
     relatedSlugs: [],
     redirectTo: "x-video-downloader",
   },
+  {
+    slug: "threads-video-downloader",
+    name: "Threads",
+    brand: "Threads",
+    title: "Threads Video Downloader – Download Public Threads Posts",
+    metaDescription:
+      "Paste a public Threads post link to download its video or image. No login, no app install, works on phone and desktop.",
+    h1: "Threads Video Downloader",
+    tagline: "Save public videos and images from a Threads post — paste the link and download.",
+    color: "#000000",
+    published: true,
+    urlExamples: ["threads.net/@username/post/CxAbC123xyz", "threads.com/@username/post/CxAbC123xyz"],
+    supportedContent: ["Video posts", "Image posts"],
+    intro: [
+      "Threads posts carry either a video or a single image, and the link format is the same either way — this page detects which one a given post contains and offers the matching format.",
+      "Only public posts can be downloaded here, the same rule as everywhere else on this site: if you'd need to log in or follow the account to see the post, a downloader can't reach it either.",
+    ],
+    howTo: [
+      "Open the Threads post in the app or in a browser.",
+      "Tap the share icon and choose \"Copy Link.\"",
+      "Paste the link into the box at the top of this page and press Download.",
+      "Save the file once it's ready.",
+    ],
+    formats: [
+      { label: "MP4 (video posts)", detail: "The video as posted, at the resolution Threads serves it." },
+      { label: "JPG (image posts)", detail: "The original image, where the post contains one instead of a video." },
+    ],
+    troubleshooting: [
+      { issue: "The link says the post is unavailable", explanation: "Threads only allows public content to be fetched this way — a private account's posts will fail even with a valid-looking link." },
+      { issue: "I got an image instead of a video", explanation: "Some Threads posts contain a still image rather than a video — the page reflects whichever the post actually contains, it isn't converting one into the other." },
+    ],
+    faq: [
+      { q: "Can I download from a private Threads account?", a: "No. Only posts from public accounts can be downloaded here." },
+      { q: "Does this work for threads.net and threads.com links?", a: "Yes, both point to the same posts and are handled the same way." },
+    ],
+    relatedSlugs: ["instagram-video-downloader", "x-video-downloader"],
+    lastUpdated: "2026-09-10",
+  },
+  {
+    slug: "reddit-video-downloader",
+    name: "Reddit",
+    brand: "Reddit",
+    title: "Reddit Video Downloader – Download Public Reddit Videos",
+    metaDescription:
+      "Paste a public Reddit post link to download its video or image. No login, no app install, works on phone and desktop.",
+    h1: "Reddit Video Downloader",
+    tagline: "Save public videos and images from any Reddit post — paste the link and download.",
+    color: "#FF4500",
+    published: true,
+    urlExamples: ["reddit.com/r/subreddit/comments/abc123/post_title", "redd.it/abc123"],
+    supportedContent: ["Native video posts", "Image posts"],
+    intro: [
+      "Reddit hosts video directly on its own servers for most video posts (rather than embedding YouTube or another platform), and that native video is what this page downloads.",
+      "One real limitation worth knowing up front: Reddit stores a video's audio as a separate track from the video itself. Combining them back into a single file with sound needs additional server-side processing that this tool doesn't currently do, so native Reddit videos download as video-only for now — the format label says this clearly rather than handing over a silent file unexpectedly.",
+    ],
+    howTo: [
+      "Open the Reddit post in the app or in a browser.",
+      "Tap the share icon and choose \"Copy Link,\" or copy the URL from your browser's address bar.",
+      "Paste the link into the box at the top of this page and press Download.",
+      "Save the file once it's ready.",
+    ],
+    formats: [
+      { label: "MP4, video only", detail: "Reddit's native video track, without audio — see the note above for why." },
+      { label: "JPG/PNG (image posts)", detail: "The original image, for posts that contain a picture rather than a video." },
+    ],
+    troubleshooting: [
+      { issue: "The downloaded video has no sound", explanation: "This is expected for now, not a bug — see the explanation above. Reddit serves video and audio as separate files, and this tool currently downloads the video track only." },
+      { issue: "The post says it's unavailable", explanation: "Only posts from public subreddits can be downloaded here — content from private or quarantined subreddits, or a deleted post, won't resolve." },
+      { issue: "It's a link to a video hosted elsewhere, not on Reddit", explanation: "Some Reddit posts are just a link to a YouTube or other platform's video rather than a native upload. Use that platform's own downloader page instead — this page only handles video that Reddit itself is hosting." },
+    ],
+    faq: [
+      { q: "Why doesn't the downloaded video have sound?", a: "Reddit stores video and audio as two separate files. This tool downloads the video track only — combining them requires processing this project doesn't currently do." },
+      { q: "Can I download from a private subreddit?", a: "No. Only posts from public subreddits can be downloaded here." },
+      { q: "Does this work for redd.it short links?", a: "Yes, redd.it links resolve to the same post data as a full reddit.com link." },
+    ],
+    relatedSlugs: ["youtube-video-downloader", "x-video-downloader"],
+    lastUpdated: "2026-09-10",
+  },
 ];
+
+// Runs once when this module loads — which happens during the Next.js
+// build (generateStaticParams calls getPublishedPlatforms() for every
+// route that needs it) — so a duplicate slug fails the build immediately
+// instead of silently shadowing a real page's content with a stale
+// unpublished stub, which is exactly the bug this caught once already
+// (see git history: two "SUPPORTED" platforms had leftover placeholder
+// entries earlier in this array with the same slug, and .find()-based
+// lookups were silently resolving to the wrong one).
+function assertNoDuplicateSlugs(list: Platform[]): void {
+  const seen = new Map<string, number>();
+  for (const p of list) {
+    seen.set(p.slug, (seen.get(p.slug) ?? 0) + 1);
+  }
+  const duplicates = [...seen.entries()].filter(([, count]) => count > 1).map(([slug]) => slug);
+  if (duplicates.length > 0) {
+    throw new Error(
+      `platforms.ts has duplicate slug(s): ${duplicates.join(", ")} — a later entry with the same slug silently shadows an earlier (or is shadowed by it) in any .find()-based lookup. Remove or rename the duplicate before building.`
+    );
+  }
+}
+assertNoDuplicateSlugs(platforms);
 
 export function getPublishedPlatforms(): Platform[] {
   return platforms.filter((p) => p.published);
